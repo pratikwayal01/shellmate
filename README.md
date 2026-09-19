@@ -1,7 +1,8 @@
-# cmdmap
+# shellmate
 
-Match natural-language queries to exact shell commands. Local, instant,
-no model wake.
+Local terminal assistant: human words in, exact shell command out.
+Instant for known commands (keyword map), Spark-X2.5-1.7B model for the
+rest. No cloud, no API key.
 
 ```
 $ python3 cmdmap.py "flush dns cache on arch"
@@ -10,11 +11,12 @@ resolvectl flush-caches
 
 ## How it works
 
-A curated keyword map (entries in `commands.json`, loaded by
-`cmdmap.py`) — each entry has natural phrases a user might type, the
-exact shell line, and a one-line description. `match()` strips filler
-words ("how to", "on arch", "cmd for"), scores keyword overlap, and
-returns the single best command above threshold, or `None`.
+A curated keyword map (`cmdmap` module: entries in `commands.json`,
+loaded by `cmdmap.py`) — each entry has natural phrases a user might
+type, the exact shell line, and a one-line description. `match()`
+strips filler words ("how to", "on arch", "cmd for"), scores keyword
+overlap, and returns the single best command above threshold, or
+`None`.
 
 Built to be the **first hop** of a local terminal assistant: `llm.py`
 (the Spark-X2.5-1.7B REPL) calls `match()` before waking the model.
