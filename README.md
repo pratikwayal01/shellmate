@@ -35,6 +35,11 @@ ln -sf ~/work/shellmate/llm.py ~/.llm.py   # keep the llm alias happy
 ./install.sh   # ~/.local/bin/shellmate + builds tldr index
 ```
 
+Prefer a binary? Single-file builds for linux/mac/windows attach to each
+release (GitHub → Releases → `shellmate-<os>-<arch>`) — no Python, no uv.
+Map + model tiers work out of the box; build the tldr index with
+`python3 build_tldr_db.py` if you want tier 2.
+
 Needs `uv`. The model tier additionally needs llama-server on port
 11434 serving Spark-X2.5-1.7B:
 

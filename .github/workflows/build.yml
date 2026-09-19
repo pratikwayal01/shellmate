@@ -1,0 +1,69 @@
+name: Build & Attach Binaries
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to attach binaries to (e.g. v1.0.0)"
+        required: true
+        default: "v1.0.0"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: shellmate-linux-x86_64
+          - os: ubuntu-24.04-arm
+            artifact: shellmate-linux-arm64
+          - os: macos-latest
+            artifact: shellmate-macos-arm64
+          - os: windows-latest
+            artifact: shellmate-windows-x86_64.exe
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Self-check cmdmap
+        run: python cmdmap.py
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build binary
+        env:
+          SHELLMATE_ARTIFACT: ${{ matrix.artifact }}
+        run: pyinstaller --noconfirm shellmate.spec
+
+      - name: Smoke test binary
+        if: runner.os != 'Windows'
+        run: |
+          echo "flush dns cache on arch" | dist/${{ matrix.artifact }} | grep -q "resolvectl flush-caches"
+
+      - name: Generate SHA256 checksum
+        shell: bash
+        run: |
+          cd dist
+          if command -v sha256sum &>/dev/null; then
+            sha256sum ${{ matrix.artifact }} > ${{ matrix.artifact }}.sha256
+          else
+            # macOS fallback
+            shasum -a 256 ${{ matrix.artifact }} > ${{ matrix.artifact }}.sha256
+          fi
+
+      - name: Upload to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{ inputs.tag }} dist/${{ matrix.artifact }} --clobber
+          gh release upload ${{ inputs.tag }} dist/${{ matrix.artifact }}.sha256 --clobber

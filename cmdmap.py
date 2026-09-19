@@ -28,7 +28,8 @@ _THRESHOLD = 0.7  # fraction of keyword words that matched, then tie-break
 
 def _load_commands() -> list[dict]:
     """Base entries from commands.json, then user-local overlay wins ties."""
-    here = os.path.dirname(os.path.abspath(__file__))
+    # frozen onefile: data files live in sys._MEIPASS, not next to __file__
+    here = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
     entries = []
     local = os.path.expanduser("~/.shellmate/commands.local.json")
     if os.path.exists(local):
