@@ -85,6 +85,7 @@ def chat(user_text, system=TERMINAL_SYSTEM_PROMPT, temp=0.7):
 
 def answer(text):
     """3-tier chain: map → tldr → model. Returns (tag, reply, elapsed_s)."""
+    global _tldr  # lazy import cache assigned below
     m = cmdmap.match(text)
     if m:
         return "[map]", m.command, 0.0
