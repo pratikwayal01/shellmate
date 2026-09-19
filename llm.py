@@ -16,6 +16,8 @@ except ImportError:
 
 import cmdmap  # instant local answer before the model wakes (same dir)
 
+import json
+import os
 import requests
 
 MODEL = "x"
@@ -78,6 +80,22 @@ def chat(user_text, system=TERMINAL_SYSTEM_PROMPT, temp=0.7):
         return f"ERROR: {e}"
 
 
+def remember(query: str, command: str) -> str:
+    """Save to local overlay so the user's correction wins over the map."""
+    path = os.path.expanduser("~/.shellmate/commands.local.json")
+    entries = []
+    if os.path.exists(path):
+        with open(path) as f:
+            entries = json.load(f)
+    entries.append({"kw": [query.strip().lower()], "cmd": command.strip(),
+                    "desc": "user-remembered"})
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(entries, f, indent=2)
+    cmdmap.reload()
+    return f"remembered: {command}"
+
+
 def main():
     global _tldr  # lazy import cache assigned in the loop
     print("llm (Spark-X2.5-1.7B local) — /help for commands, Ctrl-D or /quit to exit")
@@ -98,27 +116,34 @@ def main():
                 HISTORY.clear()
                 print("cleared")
             elif cmd in ("/h", "/help"):
-                print("commands: /quit /clear /help   — or just type a question in plain words")
+                print("commands: /quit /clear /help /remember <phrase> :: <cmd>   — or just type a question in plain words")
             elif cmd == "/hi":
                 print("llm: local Spark-X2.5-1.7B — no history on disk, no API key")
+            elif cmd == "/remember":
+                rest = text[len("/remember"):].strip()
+                if "::" not in rest:
+                    print("usage: /remember <phrase> :: <shell command>")
+                else:
+                    phrase, command = (p.strip() for p in rest.split("::", 1))
+                    print(remember(phrase, command))
             continue
         if not text.strip():
             continue
         # instant map hit first — model only wakes for misses
         m = cmdmap.match(text)
         if m:
-            print(m.command)
+            print(f"[map] {m.command}")
             continue
         # tldr fallback — intent search over ~6700 pages, still no model
         if _tldr is None:
             import tldr as _tldr  # noqa: F811 - lazy, keeps startup instant
         hit = _tldr.search(text)
         if hit:
-            print(hit)
+            print(f"[tldr] {hit}")
             continue
         t0 = time.time()
         ans = chat(text)
-        print(ans)
+        print(f"[model] {ans}")
         print(f"( {time.time() - t0:.1f}s )")
 
 

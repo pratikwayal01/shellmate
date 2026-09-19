@@ -23,7 +23,7 @@ _DB = os.path.expanduser("~/.cache/shellmate/commands.db")
 _SAFE = re.compile(r"^[a-z0-9]+$")
 
 # generic verbs/adverbs useless for matching example text — strip over _tokens
-_NOISE = {"show", "using", "most", "list", "see", "get", "how", "do"}
+_NOISE = {"show", "using", "most", "list", "see", "get", "how", "do", "tell", "joke"}
 
 
 def _match_query(intent: str) -> str | None:

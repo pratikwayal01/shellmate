@@ -27,12 +27,24 @@ _STOP = {
 _THRESHOLD = 0.7  # fraction of keyword words that matched, then tie-break
 
 def _load_commands() -> list[dict]:
-    """Entries live in commands.json — edit that, not this file."""
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "commands.json")
-    with open(path) as f:
-        return json.load(f)
+    """Base entries from commands.json, then user-local overlay wins ties."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    entries = []
+    local = os.path.expanduser("~/.shellmate/commands.local.json")
+    if os.path.exists(local):
+        with open(local) as f:
+            entries.extend(json.load(f))
+    with open(os.path.join(here, "commands.json")) as f:
+        entries.extend(json.load(f))
+    return entries
 
 COMMANDS: list[dict] = _load_commands()
+
+
+def reload() -> None:
+    """Re-read commands.json + local overlay (after /remember)."""
+    global COMMANDS
+    COMMANDS = _load_commands()
 
 
 @dataclass

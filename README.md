@@ -11,26 +11,32 @@ resolvectl flush-caches
 
 ## How it works
 
-A curated keyword map (`cmdmap` module: entries in `commands.json`,
-loaded by `cmdmap.py`) — each entry has natural phrases a user might
-type, the exact shell line, and a one-line description. `match()`
-strips filler words ("how to", "on arch", "cmd for"), scores keyword
-overlap, and returns the single best command above threshold, or
-`None`.
+Three tiers, first hit wins:
 
-`llm.py` (the Spark-X2.5-1.7B REPL) calls `match()` before waking the
-model. Hit → command in <1ms. Miss → model answers as before. The 1.7B
-model is great at composing commands but lacks obscure knowledge (e.g.
-Arch's `resolvectl flush-caches`) — the map covers that gap reliably.
+1. **`cmdmap`** — curated keyword map (`commands.json`, loaded by
+   `cmdmap.py`). `match()` strips filler words, scores keyword overlap,
+   returns the single best command above threshold, or `None`. Instant.
+2. **`tldr`** — FTS5 full-text search over ~6700 tldr-pages
+   (`~/.cache/shellmate/commands.db`, built by `build_tldr_db.py`).
+   Returns the first example of the best-matching page. No model.
+3. **Spark-X2.5-1.7B** — local model for everything the map and tldr
+   miss (~1-2s, needs llama-server on :11434).
+
+`llm.py` walks the chain and prefixes the answer with its tier:
+`[map]` / `[tldr]` / `[model]`. The 1.7B model is great at composing
+commands but lacks obscure knowledge (e.g. Arch's
+`resolvectl flush-caches`) — the map and tldr cover that gap.
 
 ## Install
 
 ```sh
 git clone git@github.com:pratikwayal01/shellmate.git ~/work/shellmate
 ln -sf ~/work/shellmate/llm.py ~/.llm.py   # keep the llm alias happy
+./install.sh   # ~/.local/bin/shellmate + builds tldr index
 ```
 
-Needs a local llama-server on port 11434 serving Spark-X2.5-1.7B:
+Needs `uv`. The model tier additionally needs llama-server on port
+11434 serving Spark-X2.5-1.7B:
 
 ```sh
 llama-server -m ~/models/Spark-X2.5-1.7B-Q4_K_M.gguf -c 2048 --port 11434 \
@@ -38,18 +44,21 @@ llama-server -m ~/models/Spark-X2.5-1.7B-Q4_K_M.gguf -c 2048 --port 11434 \
   --load-mode mlock --threads 16
 ```
 
+Without llama-server the map/tldr tiers still work; `[model]` queries
+print the start hint.
+
 ## Usage
 
-### The assistant (`llm.py`)
+### The assistant
 
 ```
-uv run --with requests python3 llm.py
+shellmate            # or: uv run --with requests python3 llm.py
 ```
 
-REPL: type questions in plain words. Map hits answer instantly; the
-rest go to the local Spark-X2.5-1.7B server (`http://127.0.0.1:11434`).
-Interactive mode supports arrows/history (readline); piped input works
-too. Slash commands: `/quit` `/clear` `/help`.
+REPL: type questions in plain words. Map/tldr hits answer instantly;
+the rest go to the local Spark-X2.5-1.7B server. Interactive mode
+supports arrows/history (readline); piped input works too. Slash
+commands: `/quit` `/clear` `/help` `/remember <phrase> :: <cmd>`.
 
 ### Library
 
@@ -80,6 +89,13 @@ Edit `commands.json`: `kw` = phrases a user might actually type, `cmd` =
 exact shell line, `desc` = one line. Generous synonyms beat clever
 scoring — the matcher is plain keyword overlap on purpose. Commands with
 placeholders use `<placeholder>` so they stay copy-paste-ready.
+
+Per-user commands live in `~/.shellmate/commands.local.json` (same
+format) and win ties over the repo map — add them with `/remember`, or
+edit the file directly. Keep upstream `commands.json` clean.
+
+> Note: `install.sh` symlinks `~/.llm.py` — run it carefully if you
+> already have a file at that path.
 
 ## The rule
 
