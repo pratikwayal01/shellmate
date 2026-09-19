@@ -18,11 +18,25 @@ strips filler words ("how to", "on arch", "cmd for"), scores keyword
 overlap, and returns the single best command above threshold, or
 `None`.
 
-Built to be the **first hop** of a local terminal assistant: `llm.py`
-(the Spark-X2.5-1.7B REPL) calls `match()` before waking the model.
-Hit → command in <1ms. Miss → model answers as before. The 1.7B model
-is great at composing commands but lacks obscure knowledge (e.g. Arch's
-`resolvectl flush-caches`) — the map covers that gap reliably.
+`llm.py` (the Spark-X2.5-1.7B REPL) calls `match()` before waking the
+model. Hit → command in <1ms. Miss → model answers as before. The 1.7B
+model is great at composing commands but lacks obscure knowledge (e.g.
+Arch's `resolvectl flush-caches`) — the map covers that gap reliably.
+
+## Install
+
+```sh
+git clone git@github.com:pratikwayal01/shellmate.git ~/work/shellmate
+ln -sf ~/work/shellmate/llm.py ~/.llm.py   # keep the llm alias happy
+```
+
+Needs a local llama-server on port 11434 serving Spark-X2.5-1.7B:
+
+```sh
+llama-server -m ~/models/Spark-X2.5-1.7B-Q4_K_M.gguf -c 2048 --port 11434 \
+  --host 127.0.0.1 --reasoning off --repeat-penalty 1.4 --repeat-last-n 128 \
+  --load-mode mlock --threads 16
+```
 
 ## Usage
 
