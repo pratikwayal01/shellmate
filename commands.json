@@ -1,0 +1,894 @@
+[
+  {
+    "kw": [
+      "flush dns",
+      "clear dns",
+      "clear dns cache",
+      "dns cache",
+      "clear resolver cache",
+      "reset dns"
+    ],
+    "cmd": "resolvectl flush-caches",
+    "desc": "flush systemd-resolved DNS cache"
+  },
+  {
+    "kw": [
+      "dns resolver status",
+      "resolver statistics"
+    ],
+    "cmd": "resolvectl statistics",
+    "desc": "show DNS cache stats"
+  },
+  {
+    "kw": [
+      "dns lookup",
+      "resolve domain",
+      "name resolution for"
+    ],
+    "cmd": "dig @1.1.1.1 <domain>",
+    "desc": "manual DNS lookup (replace <domain>)"
+  },
+  {
+    "kw": [
+      "check dns servers"
+    ],
+    "cmd": "resolvectl status | grep -A2 'DNS Server'",
+    "desc": "show active DNS servers"
+  },
+  {
+    "kw": [
+      "restart service",
+      "reload service"
+    ],
+    "cmd": "systemctl restart <service>",
+    "desc": "restart a systemd service (replace <service>)"
+  },
+  {
+    "kw": [
+      "stop service"
+    ],
+    "cmd": "systemctl stop <service>",
+    "desc": "stop a systemd service"
+  },
+  {
+    "kw": [
+      "start service",
+      "enable service",
+      "service on boot"
+    ],
+    "cmd": "systemctl enable --now <service>",
+    "desc": "start + enable a service"
+  },
+  {
+    "kw": [
+      "service status",
+      "is service running"
+    ],
+    "cmd": "systemctl status <service>",
+    "desc": "check a service's status"
+  },
+  {
+    "kw": [
+      "list running services",
+      "running units"
+    ],
+    "cmd": "systemctl list-units --type=service --state=running",
+    "desc": "list active systemd services"
+  },
+  {
+    "kw": [
+      "list timers",
+      "scheduled jobs"
+    ],
+    "cmd": "systemctl list-timers",
+    "desc": "show systemd timers"
+  },
+  {
+    "kw": [
+      "service logs"
+    ],
+    "cmd": "journalctl -u <service> -f",
+    "desc": "follow one service's logs"
+  },
+  {
+    "kw": [
+      "boot logs",
+      "logs since boot"
+    ],
+    "cmd": "journalctl -b",
+    "desc": "all logs from current boot"
+  },
+  {
+    "kw": [
+      "tail system logs",
+      "all system logs",
+      "general logs"
+    ],
+    "cmd": "journalctl -f",
+    "desc": "follow all system logs"
+  },
+  {
+    "kw": [
+      "disk space",
+      "disk usage",
+      "df",
+      "space left",
+      "disk full"
+    ],
+    "cmd": "df -h",
+    "desc": "filesystem usage, human readable"
+  },
+  {
+    "kw": [
+      "directory sizes",
+      "what using disk",
+      "du",
+      "folder sizes",
+      "biggest folders"
+    ],
+    "cmd": "du -h --max-depth=1 | sort -h",
+    "desc": "per-directory disk usage sorted"
+  },
+  {
+    "kw": [
+      "biggest directories",
+      "large folders",
+      "consuming space"
+    ],
+    "cmd": "du -h --max-depth=1 | sort -h | tail -20",
+    "desc": "top 20 disk consumers"
+  },
+  {
+    "kw": [
+      "mounted filesystems",
+      "what mounts"
+    ],
+    "cmd": "findmnt",
+    "desc": "tree of mounted filesystems"
+  },
+  {
+    "kw": [
+      "list disks",
+      "block devices"
+    ],
+    "cmd": "lsblk",
+    "desc": "all block devices"
+  },
+  {
+    "kw": [
+      "partition table"
+    ],
+    "cmd": "sudo fdisk -l",
+    "desc": "disk partition layout"
+  },
+  {
+    "kw": [
+      "smart disk health",
+      "disk health"
+    ],
+    "cmd": "sudo smartctl -a /dev/nvme0n1",
+    "desc": "SMART health report (adjust device)"
+  },
+  {
+    "kw": [
+      "free memory",
+      "ram free",
+      "memory usage",
+      "memory check",
+      "how much ram"
+    ],
+    "cmd": "free -m",
+    "desc": "memory usage in MiB"
+  },
+  {
+    "kw": [
+      "cpu info",
+      "processor model"
+    ],
+    "cmd": "lscpu",
+    "desc": "CPU architecture details"
+  },
+  {
+    "kw": [
+      "load average",
+      "cpu load",
+      "uptime",
+      "system load"
+    ],
+    "cmd": "uptime",
+    "desc": "load averages + uptime"
+  },
+  {
+    "kw": [
+      "top processes",
+      "high cpu",
+      "cpu hogs",
+      "resource hogs"
+    ],
+    "cmd": "top -o %CPU",
+    "desc": "processes sorted by CPU"
+  },
+  {
+    "kw": [
+      "list processes",
+      "all processes",
+      "ps",
+      "running process"
+    ],
+    "cmd": "ps aux",
+    "desc": "all processes"
+  },
+  {
+    "kw": [
+      "process by name",
+      "find process",
+      "grep process",
+      "is process running"
+    ],
+    "cmd": "pgrep -af '<name>'",
+    "desc": "find process(es) by name (replace <name>)"
+  },
+  {
+    "kw": [
+      "kill process by name",
+      "kill all named"
+    ],
+    "cmd": "pkill -f '<name>'",
+    "desc": "kill processes matching name/pattern"
+  },
+  {
+    "kw": [
+      "kill pid",
+      "kill process",
+      "terminate"
+    ],
+    "cmd": "kill <pid>",
+    "desc": "graceful SIGTERM by pid"
+  },
+  {
+    "kw": [
+      "force kill",
+      "kill stubborn process",
+      "kill -9"
+    ],
+    "cmd": "kill -9 <pid>",
+    "desc": "SIGKILL by pid"
+  },
+  {
+    "kw": [
+      "kill process port",
+      "free port",
+      "process on port",
+      "who uses port"
+    ],
+    "cmd": "fuser -k <port>/tcp",
+    "desc": "kill whatever listens on a port (replace <port>)"
+  },
+  {
+    "kw": [
+      "listening ports",
+      "open ports",
+      "who listens"
+    ],
+    "cmd": "ss -tlnp",
+    "desc": "all listening TCP sockets + owning process"
+  },
+  {
+    "kw": [
+      "find file by name",
+      "locate file"
+    ],
+    "cmd": "find / -name '<name>' 2>/dev/null",
+    "desc": "search whole tree by name (replace <name>)"
+  },
+  {
+    "kw": [
+      "files bigger",
+      "large files",
+      "big files",
+      "size over",
+      "files >"
+    ],
+    "cmd": "find . -type f -size +100M -exec ls -lh {} \\;",
+    "desc": "files over 100MB under cwd"
+  },
+  {
+    "kw": [
+      "file type",
+      "what is this file"
+    ],
+    "cmd": "file <path>",
+    "desc": "detect file type"
+  },
+  {
+    "kw": [
+      "which binary",
+      "where is command installed",
+      "command path"
+    ],
+    "cmd": "which <cmd>",
+    "desc": "path of an executable (replace <cmd>)"
+  },
+  {
+    "kw": [
+      "grep",
+      "search in files",
+      "find text in",
+      "search code for"
+    ],
+    "cmd": "rg -rn '<pattern>' .",
+    "desc": "recursive text search (replace <pattern>)"
+  },
+  {
+    "kw": [
+      "grep with line numbers",
+      "case insensitive search"
+    ],
+    "cmd": "rg -rni '<pattern>' .",
+    "desc": "case-insensitive recursive search"
+  },
+  {
+    "kw": [
+      "search history",
+      "command i ran before",
+      "history grep"
+    ],
+    "cmd": "history | grep '<cmd>'",
+    "desc": "search shell history (replace <cmd>)"
+  },
+  {
+    "kw": [
+      "count lines",
+      "line count",
+      "wc"
+    ],
+    "cmd": "wc -l <file>",
+    "desc": "count lines in file"
+  },
+  {
+    "kw": [
+      "first lines",
+      "head of file",
+      "top of file"
+    ],
+    "cmd": "head -n 20 <file>",
+    "desc": "first 20 lines"
+  },
+  {
+    "kw": [
+      "tail file",
+      "last lines",
+      "end of file",
+      "follow file"
+    ],
+    "cmd": "tail -f <file>",
+    "desc": "follow a growing file"
+  },
+  {
+    "kw": [
+      "unique lines",
+      "duplicates count",
+      "sort count"
+    ],
+    "cmd": "sort <file> | uniq -c | sort -rn",
+    "desc": "frequency of lines, descending"
+  },
+  {
+    "kw": [
+      "extract tar",
+      "untar",
+      "tar gz extract"
+    ],
+    "cmd": "tar -xzf <file>.tar.gz",
+    "desc": "extract .tar.gz"
+  },
+  {
+    "kw": [
+      "create tar",
+      "tar gz compress",
+      "compress folder"
+    ],
+    "cmd": "tar -czf <name>.tar.gz <dir>",
+    "desc": "compress a dir to .tar.gz"
+  },
+  {
+    "kw": [
+      "unzip",
+      "extract zip"
+    ],
+    "cmd": "unzip <file>.zip",
+    "desc": "extract zip"
+  },
+  {
+    "kw": [
+      "download url",
+      "wget",
+      "curl download",
+      "fetch"
+    ],
+    "cmd": "curl -LO <url>",
+    "desc": "download keeping filename"
+  },
+  {
+    "kw": [
+      "rsync",
+      "sync folders",
+      "copy over ssh"
+    ],
+    "cmd": "rsync -avzP <src> <dst>",
+    "desc": "incremental copy (replace src/dst)"
+  },
+  {
+    "kw": [
+      "make executable",
+      "chmod x"
+    ],
+    "cmd": "chmod +x <file>",
+    "desc": "make file executable"
+  },
+  {
+    "kw": [
+      "change owner",
+      "chown"
+    ],
+    "cmd": "sudo chown -R <user>:<group> <dir>",
+    "desc": "recursive ownership change"
+  },
+  {
+    "kw": [
+      "whoami",
+      "current user",
+      "who am i"
+    ],
+    "cmd": "whoami",
+    "desc": "current user"
+  },
+  {
+    "kw": [
+      "user id",
+      "groups of user"
+    ],
+    "cmd": "id",
+    "desc": "uid + group memberships"
+  },
+  {
+    "kw": [
+      "add user",
+      "create user"
+    ],
+    "cmd": "sudo useradd -m <name>",
+    "desc": "create user with home (replace <name>)"
+  },
+  {
+    "kw": [
+      "change password",
+      "reset password"
+    ],
+    "cmd": "passwd",
+    "desc": "change password"
+  },
+  {
+    "kw": [
+      "my ip",
+      "public ip",
+      "external ip"
+    ],
+    "cmd": "curl -s https://ifconfig.me",
+    "desc": "public IP"
+  },
+  {
+    "kw": [
+      "local ip",
+      "lan ip",
+      "ip address"
+    ],
+    "cmd": "ip -brief addr",
+    "desc": "interface IPs"
+  },
+  {
+    "kw": [
+      "network interfaces",
+      "link status"
+    ],
+    "cmd": "ip link",
+    "desc": "all interfaces"
+  },
+  {
+    "kw": [
+      "routing table",
+      "default route",
+      "gateway"
+    ],
+    "cmd": "ip route",
+    "desc": "routing table"
+  },
+  {
+    "kw": [
+      "ping",
+      "is host reachable",
+      "network latency"
+    ],
+    "cmd": "ping -c 4 <host>",
+    "desc": "ICMP check (replace <host>)"
+  },
+  {
+    "kw": [
+      "port open check",
+      "nc port",
+      "is port open"
+    ],
+    "cmd": "nc -zv <host> <port>",
+    "desc": "TCP port reachability"
+  },
+  {
+    "kw": [
+      "trace route",
+      "network path"
+    ],
+    "cmd": "mtr -r <host>",
+    "desc": "traceroute-style path report"
+  },
+  {
+    "kw": [
+      "wifi networks",
+      "wireless scan",
+      "available networks"
+    ],
+    "cmd": "nmcli device wifi list",
+    "desc": "scan wifi networks (NetworkManager)"
+  },
+  {
+    "kw": [
+      "wifi connect",
+      "join wifi"
+    ],
+    "cmd": "nmcli device wifi connect <ssid>",
+    "desc": "connect to wifi (replace <ssid>)"
+  },
+  {
+    "kw": [
+      "system info",
+      "uname",
+      "kernel version",
+      "what machine"
+    ],
+    "cmd": "uname -a",
+    "desc": "kernel + machine info"
+  },
+  {
+    "kw": [
+      "hostname",
+      "machine name"
+    ],
+    "cmd": "hostnamectl",
+    "desc": "host + OS info"
+  },
+  {
+    "kw": [
+      "date",
+      "today",
+      "current time",
+      "time is it"
+    ],
+    "cmd": "date",
+    "desc": "current date/time"
+  },
+  {
+    "kw": [
+      "watch command",
+      "repeat command",
+      "run every"
+    ],
+    "cmd": "watch -n 2 '<cmd>'",
+    "desc": "rerun command every 2s"
+  },
+  {
+    "kw": [
+      "install package",
+      "pacman install",
+      "install with pacman"
+    ],
+    "cmd": "sudo pacman -S <pkg>",
+    "desc": "install package (replace <pkg>)"
+  },
+  {
+    "kw": [
+      "update system",
+      "upgrade arch",
+      "pacman update",
+      "system update"
+    ],
+    "cmd": "sudo pacman -Syu",
+    "desc": "full system upgrade"
+  },
+  {
+    "kw": [
+      "search packages",
+      "pacman search",
+      "available package for"
+    ],
+    "cmd": "pacman -Ss <name>",
+    "desc": "search package repos (replace <name>)"
+  },
+  {
+    "kw": [
+      "installed packages",
+      "list installed"
+    ],
+    "cmd": "pacman -Qe",
+    "desc": "explicitly installed packages"
+  },
+  {
+    "kw": [
+      "package info",
+      "what provides",
+      "installed version"
+    ],
+    "cmd": "pacman -Qi <pkg>",
+    "desc": "installed package details"
+  },
+  {
+    "kw": [
+      "docker ps",
+      "running containers",
+      "list containers"
+    ],
+    "cmd": "docker ps",
+    "desc": "running containers"
+  },
+  {
+    "kw": [
+      "all containers",
+      "stopped containers",
+      "docker -a"
+    ],
+    "cmd": "docker ps -a",
+    "desc": "all containers incl. stopped"
+  },
+  {
+    "kw": [
+      "docker logs",
+      "container logs",
+      "follow container"
+    ],
+    "cmd": "docker logs -f <container>",
+    "desc": "follow container logs"
+  },
+  {
+    "kw": [
+      "docker exec",
+      "shell into container",
+      "enter container"
+    ],
+    "cmd": "docker exec -it <container> bash",
+    "desc": "shell into container"
+  },
+  {
+    "kw": [
+      "docker images",
+      "list images",
+      "local images"
+    ],
+    "cmd": "docker images",
+    "desc": "local images"
+  },
+  {
+    "kw": [
+      "remove docker image",
+      "rmi"
+    ],
+    "cmd": "docker rmi <image>",
+    "desc": "delete image"
+  },
+  {
+    "kw": [
+      "docker cleanup",
+      "docker prune",
+      "dangling images",
+      "free docker space"
+    ],
+    "cmd": "docker system prune -a",
+    "desc": "remove all unused containers/images"
+  },
+  {
+    "kw": [
+      "compose up",
+      "docker compose start",
+      "stack up"
+    ],
+    "cmd": "docker compose up -d",
+    "desc": "start compose stack detached"
+  },
+  {
+    "kw": [
+      "git status",
+      "changed files"
+    ],
+    "cmd": "git status",
+    "desc": "working tree state"
+  },
+  {
+    "kw": [
+      "git log",
+      "recent commits",
+      "commit history"
+    ],
+    "cmd": "git log --oneline -10",
+    "desc": "last 10 commits one-line"
+  },
+  {
+    "kw": [
+      "git diff",
+      "uncommitted changes"
+    ],
+    "cmd": "git diff",
+    "desc": "unstaged changes"
+  },
+  {
+    "kw": [
+      "commit changes",
+      "git commit",
+      "save changes"
+    ],
+    "cmd": "git add <files> && git commit -m '<msg>'",
+    "desc": "stage + commit (replace files/msg)"
+  },
+  {
+    "kw": [
+      "git push",
+      "upload commits",
+      "push branch"
+    ],
+    "cmd": "git push",
+    "desc": "push current branch"
+  },
+  {
+    "kw": [
+      "git pull",
+      "fetch updates"
+    ],
+    "cmd": "git pull --rebase",
+    "desc": "pull with rebase"
+  },
+  {
+    "kw": [
+      "new branch",
+      "create branch"
+    ],
+    "cmd": "git switch -c <branch>",
+    "desc": "create + switch branch"
+  },
+  {
+    "kw": [
+      "switch branch",
+      "checkout branch"
+    ],
+    "cmd": "git switch <branch>",
+    "desc": "switch branch"
+  },
+  {
+    "kw": [
+      "git stash",
+      "save for later",
+      "stash changes"
+    ],
+    "cmd": "git stash push -m '<msg>'",
+    "desc": "stash working changes"
+  },
+  {
+    "kw": [
+      "undo commit",
+      "git reset",
+      "unstage"
+    ],
+    "cmd": "git reset HEAD~1",
+    "desc": "undo last commit, keep files"
+  },
+  {
+    "kw": [
+      "kubectl pods",
+      "list pods",
+      "pods in cluster"
+    ],
+    "cmd": "kubectl get pods -A",
+    "desc": "all pods, all namespaces"
+  },
+  {
+    "kw": [
+      "kubectl services",
+      "list services"
+    ],
+    "cmd": "kubectl get svc -A",
+    "desc": "all services"
+  },
+  {
+    "kw": [
+      "kubectl deployments",
+      "list deployments"
+    ],
+    "cmd": "kubectl get deploy -A",
+    "desc": "all deployments"
+  },
+  {
+    "kw": [
+      "kubectl logs",
+      "pod logs"
+    ],
+    "cmd": "kubectl logs -f <pod>",
+    "desc": "follow pod logs"
+  },
+  {
+    "kw": [
+      "kubectl exec",
+      "shell into pod"
+    ],
+    "cmd": "kubectl exec -it <pod> -- bash",
+    "desc": "shell into pod (replace <pod>)"
+  },
+  {
+    "kw": [
+      "kubectl describe",
+      "pod details"
+    ],
+    "cmd": "kubectl describe pod <pod>",
+    "desc": "detailed pod state"
+  },
+  {
+    "kw": [
+      "kubectl ingress",
+      "list ingresses"
+    ],
+    "cmd": "kubectl get ingress -A",
+    "desc": "all ingresses"
+  },
+  {
+    "kw": [
+      "kubectl events",
+      "cluster events",
+      "recent events"
+    ],
+    "cmd": "kubectl get events -A --sort-by=.lastTimestamp",
+    "desc": "events sorted by time"
+  },
+  {
+    "kw": [
+      "kubectl scale",
+      "increase replicas",
+      "scale deployment"
+    ],
+    "cmd": "kubectl scale deploy <name> --replicas=<n>",
+    "desc": "scale a deployment"
+  },
+  {
+    "kw": [
+      "kubectl restart",
+      "restart rollout"
+    ],
+    "cmd": "kubectl rollout restart deploy <name>",
+    "desc": "rolling restart of deployment"
+  },
+  {
+    "kw": [
+      "kubectl namespaces",
+      "list namespaces"
+    ],
+    "cmd": "kubectl get ns",
+    "desc": "all namespaces"
+  },
+  {
+    "kw": [
+      "crontab",
+      "schedule command",
+      "cron jobs"
+    ],
+    "cmd": "crontab -e",
+    "desc": "edit your cron jobs"
+  },
+  {
+    "kw": [
+      "list cron jobs"
+    ],
+    "cmd": "crontab -l",
+    "desc": "show your cron jobs"
+  }
+]
