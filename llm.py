@@ -26,6 +26,7 @@ TERMINAL_SYSTEM_PROMPT = ("You are an expert Linux systems engineer. When the us
                           "explanation, no preamble.")
 
 HISTORY = []
+_tldr = None
 
 
 def read_multiline_input(prompt=">>> "):
@@ -78,6 +79,7 @@ def chat(user_text, system=TERMINAL_SYSTEM_PROMPT, temp=0.7):
 
 
 def main():
+    global _tldr  # lazy import cache assigned in the loop
     print("llm (Spark-X2.5-1.7B local) — /help for commands, Ctrl-D or /quit to exit")
     pending = ""
     while True:
@@ -106,6 +108,13 @@ def main():
         m = cmdmap.match(text)
         if m:
             print(m.command)
+            continue
+        # tldr fallback — intent search over ~6700 pages, still no model
+        if _tldr is None:
+            import tldr as _tldr  # noqa: F811 - lazy, keeps startup instant
+        hit = _tldr.search(text)
+        if hit:
+            print(hit)
             continue
         t0 = time.time()
         ans = chat(text)
