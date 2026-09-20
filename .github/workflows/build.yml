@@ -12,6 +12,23 @@ permissions:
   contents: write
 
 jobs:
+  tldr-db:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build tldr index
+        run: python build_tldr_db.py
+
+      - name: Upload commands.db to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ inputs.tag }} ~/.cache/shellmate/commands.db --clobber
+
   build:
     strategy:
       matrix:
