@@ -35,6 +35,7 @@ TERMINAL_SYSTEM_PROMPT = ("You are an expert Linux systems engineer. When the us
 
 HISTORY = []
 _tldr = None
+_gpt = None
 
 
 def read_multiline_input(prompt=">>> "):
@@ -90,8 +91,8 @@ def chat(user_text, system=TERMINAL_SYSTEM_PROMPT, temp=0.7):
 
 
 def answer(text):
-    """3-tier chain: map → tldr → model. Returns (tag, reply, elapsed_s)."""
-    global _tldr  # lazy import cache assigned below
+    """4-tier chain: map → tldr → gpt → model. Returns (tag, reply, elapsed_s)."""
+    global _tldr, _gpt  # lazy import caches assigned below
     m = cmdmap.match(text)
     if m:
         return "[map]", m.command, 0.0
@@ -100,6 +101,11 @@ def answer(text):
     hit = _tldr.search(text)
     if hit:
         return "[tldr]", hit, 0.0
+    if _gpt is None:
+        import shellgpt as _gpt
+    c = _gpt.complete(text) if _gpt._looks_like_partial(text) else []
+    if c:
+        return "[gpt]", c[0], 0.0
     t0 = time.time()
     return "[model]", chat(text), time.time() - t0
 
@@ -309,7 +315,7 @@ def main():
             continue
         tag, reply, elapsed = answer(text)
         print(f"{tag} {reply}")
-        if tag in ("[map]", "[tldr]"):
+        if tag in ("[map]", "[tldr]", "[gpt]"):
             maybe_run(reply, tag)
             LAST_SUGGESTED[:] = (reply, tag)
         elif tag == "[model]":
