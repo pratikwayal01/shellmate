@@ -1,7 +1,20 @@
 #!/bin/sh
-# shellmate installer — downloads the release binary. No build tools, no uv.
+# shellmate installer.
 #   curl -fsSL https://raw.githubusercontent.com/pratikwayal01/shellmate/main/install.sh | bash
+#   ... | bash -s -- uninstall      remove binary + cache + local data
+#   ... | bash -s -- self-update    re-download latest (same as install)
 set -e
+
+BIN_DIR="$HOME/.local/bin"
+CACHE_DIR="$HOME/.cache/shellmate"
+DATA_DIR="$HOME/.shellmate"
+
+if [ "${1:-}" = uninstall ]; then
+  rm -f "$BIN_DIR/shellmate"
+  rm -rf "$CACHE_DIR" "$DATA_DIR"
+  echo "shellmate removed."
+  exit 0
+fi
 
 VERSION=${SHELLMATE_VERSION:-latest}
 BASE=${SHELLMATE_BASE_URL:-https://github.com/pratikwayal01/shellmate/releases/$VERSION/download}
@@ -18,25 +31,16 @@ case "$(uname -m)" in
   *) echo "unsupported arch: $(uname -m)" >&2; exit 1 ;;
 esac
 [ "$os" = macos ] && [ "$arch" = x86_64 ] && \
-  { echo "no macOS x86_64 build yet (use arm64 or the pip path)" >&2; exit 1; }
+  { echo "no macOS x86_64 build yet (use arm64)" >&2; exit 1; }
 
 bin="shellmate-$os-$arch"
-url="https://github.com/pratikwayal01/shellmate/releases/$VERSION/download/$bin"
 
-# --- download + verify -------------------------------------------------------
-mkdir -p "$HOME/.local/bin" "$HOME/.cache/shellmate"
-tmp="$HOME/.local/bin/$bin"
-echo "downloading $bin ($url)..."
-curl -fsSL -o "$tmp" "$url"
-curl -fsSL -o "$tmp.sha256" "$url.sha256"
-
-# tldr index (tier-2) — release asset, not needed for map/model tiers
-if [ ! -f "$HOME/.cache/shellmate/commands.db" ]; then
-  echo "downloading tldr index (tier-2 search)..."
-  curl -fsSL -o "$HOME/.cache/shellmate/commands.db" \
-    "https://github.com/pratikwayal01/shellmate/releases/$VERSION/download/commands.db" \
-    || echo "warning: tldr index unavailable — map + model tiers still work" >&2
-fi
+# --- download to tmp dir (kept out of $BIN_DIR until verified) ---------------
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+echo "downloading $bin ($BASE/$bin)..."
+curl -fsSL -o "$tmpdir/$bin" "$BASE/$bin"
+curl -fsSL -o "$tmpdir/$bin.sha256" "$BASE/$bin.sha256"
 
 if command -v sha256sum >/dev/null 2>&1; then
   SUM="sha256sum"
@@ -47,14 +51,28 @@ else
   SUM=
 fi
 if [ -n "$SUM" ]; then
-  (cd "$HOME/.local/bin" && $SUM -c "$bin.sha256")
+  (cd "$tmpdir" && $SUM -c "$bin.sha256") || { echo "checksum mismatch — install aborted" >&2; exit 1; }
 fi
 
-chmod +x "$tmp"
-mv -f "$tmp" "$HOME/.local/bin/shellmate"
-rm -f "$HOME/.local/bin/$bin.sha256"
+# tldr index (tier-2) — release asset, not needed for map/model tiers
+if [ ! -f "$CACHE_DIR/commands.db" ]; then
+  echo "downloading tldr index (tier-2 search)..."
+  mkdir -p "$CACHE_DIR"
+  curl -fsSL -o "$CACHE_DIR/commands.db" "$BASE/commands.db" \
+    || echo "warning: tldr index unavailable — map + model tiers still work" >&2
+fi
+
+# --- install + smoke test ----------------------------------------------------
+mkdir -p "$BIN_DIR"
+chmod +x "$tmpdir/$bin"
+mv -f "$tmpdir/$bin" "$BIN_DIR/shellmate"
+rm -f "$BIN_DIR/$bin.sha256"
+
+printf "show disk space\n" | "$BIN_DIR/shellmate" 2>/dev/null | grep -q "df -h" \
+  || { echo "installed binary failed smoke test — check $BIN_DIR/shellmate" >&2; exit 1; }
 
 echo
-echo "shellmate -> $HOME/.local/bin/shellmate"
+echo "shellmate -> $BIN_DIR/shellmate"
 echo "ready. run: shellmate"
-echo "tip: add $HOME/.local/bin to PATH if it isn't already."
+echo "self-update: curl -fsSL https://raw.githubusercontent.com/pratikwayal01/shellmate/main/install.sh | bash"
+echo "uninstall:   curl -fsSL https://raw.githubusercontent.com/pratikwayal01/shellmate/main/install.sh | bash -s -- uninstall"

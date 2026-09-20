@@ -104,8 +104,18 @@ Coverage grows by gap: when the model fumbles a query, that command earns a map 
 ## Uninstall
 
 ```bash
-rm ~/.local/bin/shellmate   # and optionally ~/.shellmate/, ~/.cache/shellmate/
+curl -fsSL https://raw.githubusercontent.com/pratikwayal01/shellmate/main/install.sh | bash -s -- uninstall
 ```
+
+Removes the binary, the tldr index (`~/.cache/shellmate/`), and your custom commands (`~/.shellmate/`).
+
+## Self-update
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/pratikwayal01/shellmate/main/install.sh | bash
+```
+
+Re-downloads the latest release (checksum-verified). The existing tldr index is kept.
 
 ---
 
