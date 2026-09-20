@@ -26,20 +26,18 @@ _SAFE = re.compile(r"^[a-z0-9]+$")
 _NOISE = {"show", "using", "most", "list", "see", "get", "how", "do", "tell", "joke"}
 
 
-def _match_query(intent: str) -> str | None:
-    toks = [t for t in _tokens(intent) if _SAFE.match(t) and t not in _NOISE]
-    if not toks:
-        return None
-    # OR + bm25: docs matching MORE tokens rank higher, single-token hits still surface
-    return " OR ".join(f'"{t}"' for t in toks)
-
-
 def search(intent: str) -> str | None:
-    """Best tldr example for intent, or None (also None if db missing)."""
+    """Best tldr example for intent, or None (also None if db missing).
+
+    AND-matching only: every meaningful token must appear in the page. A bare
+    command name in the intent ('k9s') matches its page; a family name inside
+    a longer intent ('kubectl' in 'kubectl get nodes') does NOT — that's the
+    umbrella page, not the answer. No match -> None, let the model tier answer.
+    """
     toks = [t for t in _tokens(intent) if _SAFE.match(t) and t not in _NOISE]
-    q = _match_query(intent)
-    if q is None or not os.path.exists(_DB):
+    if not toks or not os.path.exists(_DB):
         return None
+    q = " AND ".join(f'"{t}"' for t in toks)
     try:
         con = sqlite3.connect(f"file:{_DB}?mode=ro", uri=True)
         try:
@@ -56,13 +54,14 @@ def search(intent: str) -> str | None:
         return None
     if not rows:
         return None
-    # prefer a page whose name is literally in the intent ('find large files' -> find)
-    name_tokens = set(toks)
-    for name, examples in rows:
-        if name.split()[0].lower() in name_tokens:
-            return examples.split("\n", 1)[0].strip()
-    first = rows[0][1].split("\n", 1)[0]
-    return first.strip() or None
+    # single token = the WHOLE ask: only answer if a page is named exactly
+    # that; otherwise None (smalltalk / junk like 'you' -> model tier)
+    if len(toks) == 1:
+        for name, examples in rows:
+            if name.split()[0].lower() == toks[0]:
+                return examples.split("\n", 1)[0].strip()
+        return None
+    return rows[0][1].split("\n", 1)[0].strip() or None
 
 
 if __name__ == "__main__":

@@ -786,6 +786,32 @@
   },
   {
     "kw": [
+      "k9s",
+      "k9s nodes",
+      "k9s cluster"
+    ],
+    "cmd": "k9s",
+    "desc": "k8s terminal UI (k9s entry must stay BEFORE the get-nodes entry — tie-break is file order)"
+  },
+  {
+    "kw": [
+      "check nodes",
+      "show nodes",
+      "list nodes",
+      "node status",
+      "kubectl get nodes",
+      "nodes in cluster",
+      "cluster nodes",
+      "node list",
+      "kubernetes nodes",
+      "k8s nodes",
+      "node health"
+    ],
+    "cmd": "kubectl get nodes",
+    "desc": "list cluster nodes"
+  },
+  {
+    "kw": [
       "kubectl pods",
       "list pods",
       "pods in cluster"
