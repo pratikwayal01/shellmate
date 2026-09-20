@@ -294,6 +294,39 @@
   },
   {
     "kw": [
+      "pdf in downloads",
+      "list pdf",
+      "list pdf files",
+      "find pdf",
+      "pdf files in downloads",
+      "list pdf in downloads"
+    ],
+    "cmd": "find \"$HOME/Downloads\" -maxdepth 2 -name \"*.pdf\" -type f",
+    "desc": "list pdfs in ~/Downloads"
+  },
+  {
+    "kw": [
+      "images in downloads",
+      "list images",
+      "list image files",
+      "find images",
+      "pictures in downloads",
+      "list photos"
+    ],
+    "cmd": "find \"$HOME/Downloads\" -maxdepth 2 -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.gif' \\)",
+    "desc": "list images in ~/Downloads"
+  },
+  {
+    "kw": [
+      "big files in downloads",
+      "large files in downloads",
+      "files bigger in downloads"
+    ],
+    "cmd": "find \"$HOME/Downloads\" -maxdepth 2 -type f -size +100M -exec ls -lh {} \\;",
+    "desc": "files over 100MB in ~/Downloads"
+  },
+  {
+    "kw": [
       "file type",
       "what is this file"
     ],

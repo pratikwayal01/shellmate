@@ -193,16 +193,21 @@ def maybe_run(cmd, tier="[map]"):
         print("  ! blocked: destructive command pattern — not running")
         return
     cmd = cmd.strip()
+    if tier != "[map]":
+        cmd = re.sub(r"```[a-zA-Z]*\n?", "", cmd)   # strip code fences
+        cmd = cmd.replace("`", "")                  # strip inline backticks
     if re.search(r"<[^>]+>", cmd):
         print(f"  ! has placeholders — fill in and run yourself: {cmd}")
+        return
+    if re.search(r"/path/to/|your[_ -]?(file|name|dir)|example\.(?:com|org)", cmd):
+        print("  ! looks like a template — not running")
         return
     if "\n" in cmd:
         print("  ! multi-line — not running")
         return
     if tier != "[map]":
-        cmd = re.sub(r"```[a-zA-Z]*\n?", "", cmd)   # strip code fences
-        cmd = cmd.replace("`", "")                  # strip inline backticks
-        if re.search(r"[;&$]", cmd.replace("\\;", "")):
+        # chaining/expansion on untrusted tiers: pipes alone are fine
+        if re.search(r"[;&$]|\|\||&&", cmd.replace("\\;", "")):
             print("  ! shell metacharacters — not running")
             return
     try:
@@ -293,6 +298,14 @@ def main():
                 print("  nothing suggested yet")
             else:
                 maybe_run(LAST_SUGGESTED[0], LAST_SUGGESTED[1])
+            continue
+        m = re.match(r"(?i)^run\s+(.+)$", text.strip())
+        if m:
+            tag, reply, elapsed = answer(m.group(1).strip())
+            print(f"{tag} {reply}")
+            if tag == "[model]":
+                print(f"( {elapsed:.1f}s )")
+            maybe_run(reply, tag)   # force the run? offer on any tier
             continue
         tag, reply, elapsed = answer(text)
         print(f"{tag} {reply}")
