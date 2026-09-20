@@ -629,6 +629,48 @@
   },
   {
     "kw": [
+      "is docker running",
+      "docker daemon status",
+      "docker service status",
+      "is docker daemon up",
+      "docker daemon not running",
+      "check docker"
+    ],
+    "cmd": "systemctl status docker",
+    "desc": "docker daemon/service status"
+  },
+  {
+    "kw": [
+      "failed services",
+      "which services failed",
+      "service failed"
+    ],
+    "cmd": "systemctl --failed",
+    "desc": "list failed systemd units"
+  },
+  {
+    "kw": [
+      "show cpu usage",
+      "top cpu process",
+      "process using most cpu",
+      "high cpu usage",
+      "which process is using cpu",
+      "cpu hog"
+    ],
+    "cmd": "ps aux --sort=-%cpu | head -10",
+    "desc": "top CPU processes"
+  },
+  {
+    "kw": [
+      "restart container",
+      "restart docker container",
+      "docker restart"
+    ],
+    "cmd": "docker restart <container>",
+    "desc": "restart a docker container (replace <container>)"
+  },
+  {
+    "kw": [
       "docker ps",
       "running containers",
       "list containers"
