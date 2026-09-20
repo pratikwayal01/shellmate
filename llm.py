@@ -23,6 +23,10 @@ import requests
 MODEL = "x"
 URL = "http://127.0.0.1:11434/v1/chat/completions"
 
+VERSION = "0.1.0"  # bump on each release (installer downloads the v<VERSION> tag)
+UPDATE_URL = "https://api.github.com/repos/pratikwayal01/shellmate/releases/latest"
+INSTALLER_URL = "https://raw.githubusercontent.com/pratikwayal01/shellmate/main/install.sh"
+
 TERMINAL_SYSTEM_PROMPT = ("You are an expert Linux systems engineer. When the user asks for a shell "
                           "command, output ONLY the command on a single line. No markdown, no "
                           "explanation, no preamble.")
@@ -147,6 +151,30 @@ const j=await r.json();add(j.tag+' '+j.reply,'tag');add('( '+j.ms+'ms )','t')});
     ThreadingHTTPServer((host, port), H).serve_forever()
 
 
+def check_update(force=False):
+    """Daily GitHub check: notice if a newer release exists. Never blocks startup."""
+    stamp = os.path.expanduser("~/.cache/shellmate/.update-check")
+    if not force and os.path.exists(stamp):
+        try:
+            if time.time() - os.path.getmtime(stamp) < 86400:
+                return
+        except OSError:
+            pass
+    try:
+        os.makedirs(os.path.dirname(stamp), exist_ok=True)
+        with open(stamp, "w") as f:  # written before the request: offline = retry tomorrow, not every run
+            f.write("1")
+        r = requests.get(UPDATE_URL, timeout=5)
+        r.raise_for_status()
+        latest = r.json()["tag_name"].lstrip("v")
+        newer = tuple(int(x) for x in latest.split("."))
+        if newer > tuple(int(x) for x in VERSION.split(".")):
+            print(f"update available: shellmate {latest} (you have {VERSION})")
+            print(f"  /update   or   curl -fsSL {INSTALLER_URL} | bash")
+    except (requests.RequestException, ValueError, KeyError, OSError):
+        pass  # offline / no release yet — silent
+
+
 def remember(query: str, command: str) -> str:
     """Save to local overlay so the user's correction wins over the map."""
     path = os.path.expanduser("~/.shellmate/commands.local.json")
@@ -169,6 +197,8 @@ def main():
         web()
         return
     print("llm (Spark-X2.5-1.7B local) — /help for commands, Ctrl-D or /quit to exit")
+    if sys.stdin.isatty():
+        check_update()
     pending = ""
     while True:
         text = read_multiline_input()
@@ -186,7 +216,7 @@ def main():
                 HISTORY.clear()
                 print("cleared")
             elif cmd in ("/h", "/help"):
-                print("commands: /quit /clear /help /remember <phrase> :: <cmd>   — or just type a question in plain words")
+                print("commands: /quit /clear /help /update /remember <phrase> :: <cmd>   — or just type a question in plain words")
             elif cmd == "/hi":
                 print("llm: local Spark-X2.5-1.7B — no history on disk, no API key")
             elif cmd == "/remember":
@@ -196,6 +226,13 @@ def main():
                 else:
                     phrase, command = (p.strip() for p in rest.split("::", 1))
                     print(remember(phrase, command))
+            elif cmd in ("/u", "/update"):
+                # same safe path as the README one-liner: checksum-verified re-install
+                if os.name == "nt":
+                    print("update: download the latest exe from https://github.com/pratikwayal01/shellmate/releases/latest")
+                else:
+                    print("updating...")
+                    os.system(f"curl -fsSL {INSTALLER_URL} | bash")
             continue
         if not text.strip():
             continue

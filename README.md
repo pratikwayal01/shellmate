@@ -53,9 +53,12 @@ $ shellmate
 ```
 /remember <phrase> :: <command>   Remember a custom command
 /clear                            Clear history
+/update                           Install the latest release
 /help                             List commands
 /quit                             Exit
 ```
+
+Auto-update: once a day shellmate checks GitHub for a newer release and prints a notice when one exists; `/update` installs it (checksum-verified, see below).
 
 ### One-shot
 
@@ -116,6 +119,7 @@ curl -fsSL https://raw.githubusercontent.com/pratikwayal01/shellmate/main/instal
 ```
 
 Re-downloads the latest release (checksum-verified). The existing tldr index is kept.
+Or run `/update` inside shellmate — same thing.
 
 ---
 
