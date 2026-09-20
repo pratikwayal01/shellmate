@@ -3,7 +3,7 @@ import os
 
 a = Analysis(
     ["llm.py"],
-    datas=[("commands.json", ".")],
+    datas=[("commands.json", "."), ("shellmate_model.npz", ".")],
     hiddenimports=["tldr"],
 )
 pyz = PYZ(a.pure)
