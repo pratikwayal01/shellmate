@@ -183,19 +183,28 @@ RUN_BLOCKED = re.compile(
     r"> /dev/sd|curl.*\| *bash|wget.*\| *sh|git push --force|sudo rm|chmod 777 /|chown -R",
     re.I)
 
-def maybe_run(cmd):
-    """Offer to run a [map]-tier command. TTY only, explicit y/n, guarded."""
+def maybe_run(cmd, tier="[map]"):
+    """Offer to run a suggested command. TTY only, explicit y/n, guarded.
+    [map] answers are trusted/curated; [tldr] and [model] answers are
+    stripped of markdown and refused if they carry shell metacharacters."""
     if not sys.stdin.isatty():
         return
     if RUN_BLOCKED.search(cmd):
         print("  ! blocked: destructive command pattern — not running")
         return
+    cmd = cmd.strip()
     if re.search(r"<[^>]+>", cmd):
         print(f"  ! has placeholders — fill in and run yourself: {cmd}")
         return
-    if "\n" in cmd.strip():
+    if "\n" in cmd:
         print("  ! multi-line — not running")
         return
+    if tier != "[map]":
+        cmd = re.sub(r"```[a-zA-Z]*\n?", "", cmd)   # strip code fences
+        cmd = cmd.replace("`", "")                  # strip inline backticks
+        if re.search(r"[;&$]", cmd.replace("\\;", "")):
+            print("  ! shell metacharacters — not running")
+            return
     try:
         ans = input("  run? [y/N] ").strip().lower()
     except (EOFError, KeyboardInterrupt):
@@ -232,6 +241,8 @@ def remember(query: str, command: str) -> str:
 
 def main():
     global _tldr  # lazy import cache assigned in the loop
+    global LAST_SUGGESTED
+    LAST_SUGGESTED = [None, None]  # (cmd, tier) for the 'run it' alias
     if len(sys.argv) > 1 and sys.argv[1] == "--web":
         web()
         return
@@ -255,7 +266,7 @@ def main():
                 HISTORY.clear()
                 print("cleared")
             elif cmd in ("/h", "/help"):
-                print("commands: /quit /clear /help /update /remember <phrase> :: <cmd>   — or just type a question in plain words; [map] answers offer run? y/n")
+                print("commands: /quit /clear /help /update /remember <phrase> :: <cmd>   — plain words ask anything; [map] and [tldr] answers offer run? y/n; 'run it' re-runs the last suggestion")
             elif cmd == "/hi":
                 print("llm: local Spark-X2.5-1.7B — no history on disk, no API key")
             elif cmd == "/remember":
@@ -275,11 +286,21 @@ def main():
             continue
         if not text.strip():
             continue
+        if text.strip().lower() in ("q", "quit", "exit"):
+            break
+        if text.strip().lower() in ("run it", "run that", "run", "execute", "do it"):
+            if LAST_SUGGESTED[0] is None:
+                print("  nothing suggested yet")
+            else:
+                maybe_run(LAST_SUGGESTED[0], LAST_SUGGESTED[1])
+            continue
         tag, reply, elapsed = answer(text)
         print(f"{tag} {reply}")
-        if tag == "[map]":
-            maybe_run(reply)
-        if tag == "[model]":
+        if tag in ("[map]", "[tldr]"):
+            maybe_run(reply, tag)
+            LAST_SUGGESTED[:] = (reply, tag)
+        elif tag == "[model]":
+            LAST_SUGGESTED[:] = (reply, tag)
             print(f"( {elapsed:.1f}s )")
 
 

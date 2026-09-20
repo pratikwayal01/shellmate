@@ -58,7 +58,7 @@ $ shellmate
 /quit                             Exit
 ```
 
-When a `[map]` answer has no placeholders, shellmate asks `run? [y/N]` and executes it (interactive mode only; destructive patterns are blocked, model/tldr answers are never run).
+When a `[map]` or `[tldr]` answer has no placeholders and no destructive patterns, shellmate asks `run? [y/N]` and executes it (interactive mode only). Type `run it` to re-offer the last suggested command — including `[model]` answers, which stay display-only until you ask. Model/tldr answers are stripped of markdown and refused if they carry shell metacharacters (`; & $`).
 
 Auto-update: once a day shellmate checks GitHub for a newer release and prints a notice when one exists; `/update` installs it (checksum-verified, see below).
 
