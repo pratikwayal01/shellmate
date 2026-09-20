@@ -18,6 +18,8 @@ import cmdmap  # instant local answer before the model wakes (same dir)
 
 import json
 import os
+import re
+import subprocess
 import requests
 
 MODEL = "x"
@@ -175,6 +177,43 @@ def check_update(force=False):
         pass  # offline / no release yet — silent
 
 
+# tripwire patterns — never offer execution for these (short list, not a policy)
+RUN_BLOCKED = re.compile(
+    r"rm -rf|rm -fr|mkfs\.|fdisk|dd if=|:\(\{|shutdown|poweroff|reboot|init 0|"
+    r"> /dev/sd|curl.*\| *bash|wget.*\| *sh|git push --force|sudo rm|chmod 777 /|chown -R",
+    re.I)
+
+def maybe_run(cmd):
+    """Offer to run a [map]-tier command. TTY only, explicit y/n, guarded."""
+    if not sys.stdin.isatty():
+        return
+    if RUN_BLOCKED.search(cmd):
+        print("  ! blocked: destructive command pattern — not running")
+        return
+    if re.search(r"<[^>]+>", cmd):
+        print(f"  ! has placeholders — fill in and run yourself: {cmd}")
+        return
+    if "\n" in cmd.strip():
+        print("  ! multi-line — not running")
+        return
+    try:
+        ans = input("  run? [y/N] ").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        print()
+        return
+    if ans not in ("y", "yes"):
+        return
+    try:
+        p = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
+        out = (p.stdout + p.stderr).strip()
+        if out:
+            print(out)
+        if p.returncode != 0:
+            print(f"  ! exit code {p.returncode}")
+    except subprocess.TimeoutExpired:
+        print("  ! timed out after 30s (long-running? run it yourself)")
+
+
 def remember(query: str, command: str) -> str:
     """Save to local overlay so the user's correction wins over the map."""
     path = os.path.expanduser("~/.shellmate/commands.local.json")
@@ -216,7 +255,7 @@ def main():
                 HISTORY.clear()
                 print("cleared")
             elif cmd in ("/h", "/help"):
-                print("commands: /quit /clear /help /update /remember <phrase> :: <cmd>   — or just type a question in plain words")
+                print("commands: /quit /clear /help /update /remember <phrase> :: <cmd>   — or just type a question in plain words; [map] answers offer run? y/n")
             elif cmd == "/hi":
                 print("llm: local Spark-X2.5-1.7B — no history on disk, no API key")
             elif cmd == "/remember":
@@ -238,6 +277,8 @@ def main():
             continue
         tag, reply, elapsed = answer(text)
         print(f"{tag} {reply}")
+        if tag == "[map]":
+            maybe_run(reply)
         if tag == "[model]":
             print(f"( {elapsed:.1f}s )")
 

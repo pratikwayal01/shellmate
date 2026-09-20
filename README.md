@@ -58,6 +58,8 @@ $ shellmate
 /quit                             Exit
 ```
 
+When a `[map]` answer has no placeholders, shellmate asks `run? [y/N]` and executes it (interactive mode only; destructive patterns are blocked, model/tldr answers are never run).
+
 Auto-update: once a day shellmate checks GitHub for a newer release and prints a notice when one exists; `/update` installs it (checksum-verified, see below).
 
 ### One-shot
