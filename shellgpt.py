@@ -103,6 +103,7 @@ def _clean(s):
     """Presentation scrub: tldr templates {{x}} -> x, collapse repeated words."""
     s = re.sub(r"\{\{[^}]*\}\}", lambda m: m.group(0)[2:-2], s)
     s = s.split("{")[0]                            # drop unfinished {{... tails
+    s = s.replace("}", "")                         # stray closers from unbalanced {{
     s = re.sub(r"(?<!\S)(\S+)(?: \1)+", r"\1", s)  # collapse "cmd cmd"
     s = re.sub(r"[\s>|&;=]+$", "", s)              # trailing redirects/ornaments
     return re.sub(r"\s{2,}", " ", s.strip())
@@ -187,6 +188,7 @@ def _self_check():
     assert _clean("git check check {{file}}") == "git check file"
     assert _clean("ls --all --all {{dir}}") == "ls --all dir"
     assert _clean("git branch {{x}} > {{y") == "git branch x"
+    assert _clean("kubectl get pod_name}}") == "kubectl get pod_name"
     st = _RNG.bit_generator.state
     first = complete("docker p", 1)
     _RNG.bit_generator.state = st
