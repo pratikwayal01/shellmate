@@ -99,6 +99,15 @@ def _forward(p, tokens):
     return _ln(p, "ln_f", x) @ p.params["lm_head.weight"].T  # tied head
 
 
+def _clean(s):
+    """Presentation scrub: tldr templates {{x}} -> x, collapse repeated words."""
+    s = re.sub(r"\{\{[^}]*\}\}", lambda m: m.group(0)[2:-2], s)
+    s = s.split("{")[0]                            # drop unfinished {{... tails
+    s = re.sub(r"(?<!\S)(\S+)(?: \1)+", r"\1", s)  # collapse "cmd cmd"
+    s = re.sub(r"[\s>|&;=]+$", "", s)              # trailing redirects/ornaments
+    return re.sub(r"\s{2,}", " ", s.strip())
+
+
 def complete(prefix, n=5):
     """Top-n completions of a partial command. Empty list if no model."""
     p = _load()
@@ -121,8 +130,7 @@ def complete(prefix, n=5):
             if ch == "\n":
                 break
             idx.append(tok)
-        full = prefix + "".join(res)
-        key = full.strip()
+        key = _clean(prefix + "".join(res))
         if key and key not in seen:
             seen.add(key)
             out.append(key)
@@ -175,6 +183,10 @@ def _self_check():
     diff = np.abs(got - exp).max()
     print(f"logits max diff vs torch: {diff:.2e}")
     assert diff < 1e-3, "numpy forward diverges from torch reference"
+    assert _clean("git branch {{name}}") == "git branch name"
+    assert _clean("git check check {{file}}") == "git check file"
+    assert _clean("ls --all --all {{dir}}") == "ls --all dir"
+    assert _clean("git branch {{x}} > {{y") == "git branch x"
     st = _RNG.bit_generator.state
     first = complete("docker p", 1)
     _RNG.bit_generator.state = st
