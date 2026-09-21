@@ -10,6 +10,7 @@ import re
 import sqlite3
 import sys
 from dataclasses import dataclass
+from difflib import SequenceMatcher
 from pathlib import Path
 
 import numpy as np
@@ -116,6 +117,7 @@ def complete(prefix, n=5):
         return []
     seen, out = set(), []
     import itertools
+    prefix_toks = [t for t in re.findall(r"[A-Za-z0-9][\w.-]*", prefix) if len(t) >= 4]
     for _ in itertools.repeat(None, n * 3):
         idx = _encode(prefix)[-p.block:]
         res = []
@@ -131,6 +133,10 @@ def complete(prefix, n=5):
             if ch == "\n":
                 break
             idx.append(tok)
+        tail = re.findall(r"[A-Za-z0-9][\w.-]*", "".join(res))
+        if any(len(t) >= 4 and any(SequenceMatcher(None, t, p).ratio() >= 0.6
+                                   for p in prefix_toks) for t in tail):
+            continue  # echo of a prompt token (kubectl -> rubectl)
         key = _clean(prefix + "".join(res))
         if key and key not in seen:
             seen.add(key)
